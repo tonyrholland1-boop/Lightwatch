@@ -1,133 +1,117 @@
 import { useState } from 'react';
 import { Icon, StatusIcon } from './icons.jsx';
-import NeighbourhoodSearch from './NeighbourhoodSearch.jsx';
 import { statusMeta, timeAgo } from '../lib/format.js';
 
-/**
- * Approximate relative positions (0–100) for a schematic pilot map.
- * Deliberately illustrative, not a geographic reference.
- */
-const MAP_POSITIONS = {
-  'lekki-phase-1': [62, 68],
-  'lekki-phase-2': [67, 78],
-  ikoyi: [52, 64],
-  'victoria-island': [56, 58],
-  'ikeja-gra': [33, 26],
-  yaba: [36, 45],
-  surulere: [31, 54],
-  gbagada: [44, 42],
-  magodo: [24, 35],
-  ajah: [78, 76],
-  'festac-town': [16, 68],
-  ogba: [30, 33],
-  'wuse-2': [88, 18],
-  garki: [83, 27],
-  maitama: [86, 12],
-};
+const STATUS_ORDER = ['ON', 'OFF', 'CONFLICTED', 'UNKNOWN'];
 
 const STATUS_COLOR = {
-  ON: '#a6ff70',
-  OFF: '#e45d5d',
-  UNKNOWN: '#6a6d79',
-  CONFLICTED: '#d9a441',
+  ON: 'var(--status-on)',
+  OFF: 'var(--status-off)',
+  UNKNOWN: 'var(--status-unknown)',
+  CONFLICTED: 'var(--status-conflicted)',
 };
 
-function PilotMap({ areas, selectedSlug, onSelect }) {
-  const [hover, setHover] = useState(null);
+const STATUS_LABEL = {
+  ON: 'Reported on',
+  OFF: 'Reported off',
+  CONFLICTED: 'Conflicted',
+  UNKNOWN: 'Not reported',
+};
+
+/**
+ * Coverage readings: real counts from the live overview, rendered as a
+ * labelled distribution so the section always shows measured data rather
+ * than a decorative shape.
+ */
+function CoverageReadings({ areas, onSelect, selectedSlug }) {
+  const counts = STATUS_ORDER.map((status) => ({
+    status,
+    count: areas.filter((area) => area.status === status).length,
+  }));
+  const total = areas.length;
+  const reporting = areas.filter((area) => area.eligibleReportCount > 0).length;
+  const sorted = [...areas].sort(
+    (a, b) => (b.eligibleReportCount || 0) - (a.eligibleReportCount || 0),
+  );
+
+  if (total === 0) {
+    return (
+      <div className="coverage-empty" role="status">
+        <p className="coverage-empty__title">No coverage loaded yet.</p>
+        <p className="coverage-empty__copy">
+          The pilot list arrives with the first status check. Nothing here is guessed —
+          areas appear only once they are supported.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="map">
-      <div className="grain" aria-hidden="true" />
-      <svg
-        viewBox="0 0 100 72"
-        width="100%"
-        height="100%"
-        role="group"
-        aria-label="Schematic map of supported neighbourhoods"
-        style={{ position: 'absolute', inset: 0 }}
-      >
-        <defs>
-          <pattern id="grid" width="8" height="8" patternUnits="userSpaceOnUse">
-            <path d="M 8 0 L 0 0 0 8" className="map__grid-line" strokeWidth="0.16" />
-          </pattern>
-        </defs>
-        <rect width="100" height="72" fill="url(#grid)" opacity="0.85" />
-        {/* Schematic Lagos coastline + lagoon suggestion */}
-        <path
-          className="map__shore"
-          d="M0 50 C 12 47, 18 52, 28 50 S 44 44, 52 47 S 68 55, 78 52 S 96 44, 100 47 L100 72 L0 72 Z"
-        />
-        <path className="map__shore" d="M30 44 C 38 40, 46 41, 50 36 S 60 30, 64 34" opacity="0.5" />
-        {/* Schematic Abuja cluster divider */}
-        <line x1="72" y1="0" x2="76" y2="36" stroke="rgba(255,255,255,0.05)" strokeWidth="0.2" strokeDasharray="1 1.4" />
+    <div className="readings">
+      <div className="readings__bar" role="img" aria-label={`Status split across ${total} neighbourhoods`}>
+        {counts.map(({ status, count }) =>
+          count > 0 ? (
+            <span
+              key={status}
+              className="readings__seg"
+              data-status={status}
+              style={{ flexGrow: count, background: STATUS_COLOR[status] }}
+              title={`${STATUS_LABEL[status]}: ${count}`}
+            />
+          ) : null,
+        )}
+      </div>
 
-        {areas.map((area) => {
-          const [x, y] = MAP_POSITIONS[area.slug] || [50, 36];
-          const color = STATUS_COLOR[area.status] || STATUS_COLOR.UNKNOWN;
-          const isSelected = area.slug === selectedSlug;
-          const isActive = hover?.slug === area.slug;
+      <dl className="readings__legend">
+        {counts.map(({ status, count }) => (
+          <div className="readings__key" key={status}>
+            <dt>
+              <span className="readings__dot" style={{ background: STATUS_COLOR[status] }} />
+              {STATUS_LABEL[status]}
+            </dt>
+            <dd>
+              <strong>{count}</strong>
+              <span>{total ? Math.round((count / total) * 100) : 0}%</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="readings__note">
+        <strong>{reporting}</strong> of {total} neighbourhoods have a report in the last
+        two hours. The rest stay unreported until someone shares an observation.
+      </p>
+
+      <div className="readings__list-head">
+        <p className="readings__list-title">Reports by neighbourhood</p>
+        <p className="readings__list-unit">eligible now</p>
+      </div>
+      <ul className="readings__list">
+        {sorted.map((area) => {
+          const max = Math.max(1, ...areas.map((item) => item.eligibleReportCount || 0));
+          const pct = ((area.eligibleReportCount || 0) / max) * 100;
           return (
-            <g
-              key={area.id}
-              className="map__pin"
-              data-selected={isSelected}
-              transform={`translate(${x} ${y})`}
-              onMouseEnter={() => setHover(area)}
-              onMouseLeave={() => setHover(null)}
-              onClick={() => onSelect(area)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onSelect(area);
-                }
-              }}
-              onFocus={() => setHover(area)}
-              onBlur={() => setHover(null)}
-              tabIndex={0}
-              role="button"
-              aria-label={`${area.name}, ${area.city}: ${statusMeta(area.status).short}${
-                area.latestReportAt ? `, reported ${timeAgo(area.latestReportAt)}` : ''
-              }`}
-            >
-              <circle
-                className="map__pin-ring"
-                r={isActive || isSelected ? 3.6 : 3}
-                stroke={color}
-              />
-              <circle r="1.35" fill={color} opacity={0.9} />
-              <circle r="4.4" fill={color} opacity={0.09} />
-            </g>
+            <li key={area.id}>
+              <button
+                type="button"
+                className="readings__row"
+                data-selected={area.slug === selectedSlug}
+                onClick={() => onSelect(area)}
+              >
+                <span className="readings__name">{area.name}</span>
+                <span className="readings__track">
+                  <span
+                    className="readings__fill"
+                    style={{ width: `${Math.max(pct, area.eligibleReportCount ? 6 : 0)}%` }}
+                    data-status={area.status}
+                  />
+                </span>
+                <span className="readings__value">{area.eligibleReportCount || 0}</span>
+              </button>
+            </li>
           );
         })}
-      </svg>
-
-      {hover && MAP_POSITIONS[hover.slug] && (
-        <div
-          className="map__tooltip"
-          style={{ left: `${MAP_POSITIONS[hover.slug][0]}%`, top: `${MAP_POSITIONS[hover.slug][1] * (100 / 72)}%` }}
-        >
-          <strong>{hover.name}</strong>
-          <span>
-            {statusMeta(hover.status).short}
-            {hover.latestReportAt ? ` · ${timeAgo(hover.latestReportAt)}` : ''}
-          </span>
-        </div>
-      )}
-
-      <div className="map__legend">
-        <span>
-          <i style={{ background: STATUS_COLOR.ON }} /> Reported ON
-        </span>
-        <span>
-          <i style={{ background: STATUS_COLOR.OFF }} /> Reported OFF
-        </span>
-        <span>
-          <i style={{ background: STATUS_COLOR.CONFLICTED }} /> Conflicted
-        </span>
-        <span>
-          <i style={{ background: STATUS_COLOR.UNKNOWN }} /> Not reported
-        </span>
-      </div>
+      </ul>
     </div>
   );
 }
@@ -196,7 +180,7 @@ export default function Coverage({
     <section className="section" id="coverage" aria-labelledby="coverage-heading">
       <div className="shell">
         <div className="explorer__toolbar">
-          <div style={{ maxWidth: 640 }}>
+          <div className="explorer__intro">
             <p className="eyebrow" style={{ marginBottom: 18 }}>
               Coverage
             </p>
@@ -208,23 +192,35 @@ export default function Coverage({
               supported {areas.length === 1 ? 'neighbourhood' : 'neighbourhoods'} across{' '}
               {cities.length} states
             </p>
-            <p className="lead" style={{ marginTop: 24, maxWidth: '52ch' }}>
+            <p className="lead explorer__lead">
               We only list areas we can cover in this pilot, across {cities.length > 0 ? cities.length : 2} states.
               An empty area is shown as unreported — never guessed.
             </p>
-          </div>
-          <div style={{ width: '100%', maxWidth: 360 }}>
-            <NeighbourhoodSearch
-              areas={areas}
-              onSelect={onSelect}
-              placeholder="Jump to an area"
-            />
           </div>
         </div>
 
         <div className="explorer__layout">
           <div className="explorer__left">
-            <PilotMap areas={areas} selectedSlug={selectedSlug} onSelect={onSelect} />
+            <div className="readings-panel">
+              <div className="case__rim" aria-hidden="true" />
+              <div className="readings-panel__head">
+                <p className="readings-panel__title">Where reports stand</p>
+                <p className="readings-panel__meta">Live counts</p>
+              </div>
+              {loading && areas.length === 0 ? (
+                <div className="feed__loading" aria-busy="true">
+                  {[0, 1, 2].map((i) => (
+                    <div className="skeleton" key={i} style={{ height: 56 }} />
+                  ))}
+                </div>
+              ) : (
+                <CoverageReadings
+                  areas={areas}
+                  selectedSlug={selectedSlug}
+                  onSelect={onSelect}
+                />
+              )}
+            </div>
           </div>
 
           <div>

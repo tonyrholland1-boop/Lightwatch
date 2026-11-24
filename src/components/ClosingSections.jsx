@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { Icon } from './icons.jsx';
+import streetNight from '../assets/street-night.webp';
 
 export function WarmConversion({ onReport, onScrollTo }) {
   return (
-    <section className="warm" aria-labelledby="warm-heading">
+    <section
+      className="warm"
+      aria-labelledby="warm-heading"
+      style={{ '--warm-photo': `url(${streetNight})` }}
+    >
+      {/* Barely-there neighbourhood-at-night backdrop; text contrast is
+          protected by the scrim in CSS, not by the image's own brightness. */}
+      <div className="warm__photo" aria-hidden="true" />
+      <div className="warm__photo-scrim" aria-hidden="true" />
       <div className="warm__grain" aria-hidden="true" />
       <div className="warm__glow" aria-hidden="true" />
       <div className="shell warm__inner">
@@ -233,6 +242,12 @@ export function Footer({ onScrollTo, onReport, contactEmail }) {
             are generated server-side in West Africa Time (WAT).
           </p>
         </div>
+      </div>
+
+      {/* Oversized wordmark at the very bottom: a quiet signature that
+          brightens on hover. aria-hidden — the brand is already named above. */}
+      <div className="footer__wordmark-wrap" aria-hidden="true">
+        <span className="footer__wordmark">LightWatch</span>
       </div>
     </footer>
   );

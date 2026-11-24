@@ -263,7 +263,7 @@ export default function App() {
           onSelect={selectArea}
         />
 
-        <HowItWorks onScrollTo={scrollToId} metrics={metrics} />
+        <HowItWorks />
         <Quote />
         <Trust onScrollTo={scrollToId} />
         <WarmConversion onReport={goReport} onScrollTo={scrollToId} />
