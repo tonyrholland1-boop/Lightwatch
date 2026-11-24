@@ -107,8 +107,17 @@ function seedDemoReports({ force = false } = {}) {
     .prepare('SELECT MAX(created_at) AS latest FROM electricity_reports WHERE is_demo = 1')
     .get();
   const newestMs = latest?.latest ? new Date(latest.latest).getTime() : 0;
-  const stale = Date.now() - newestMs > 3 * 60 * 60 * 1000;
-  if (!force && !stale) return;
+  const driftMinutes = (Date.now() - newestMs) / 60000;
+
+  // Refresh once the seeded ages have drifted far enough that the dataset no
+  // longer shows a representative mix (the newest report was ~7 minutes old by
+  // design). Must stay well inside the freshness window, otherwise areas flip
+  // to UNKNOWN before the data is refreshed.
+  const threshold = Math.min(
+    Math.max(config.demoRefreshMinutes, 1),
+    Math.max(config.freshness.freshMinutes, 1),
+  );
+  if (!force && newestMs > 0 && driftMinutes < threshold) return;
 
   db.prepare('DELETE FROM electricity_reports WHERE is_demo = 1').run();
   const findArea = db.prepare('SELECT id FROM neighbourhoods WHERE slug = ?');
@@ -384,7 +393,29 @@ export const store = {
   },
 };
 
+/**
+ * Periodic housekeeping for long-lived processes. Re-ages demo data once it has
+ * drifted past the configured threshold, so a preview that has been idle for
+ * hours comes back showing the full mix of states rather than all-UNKNOWN.
+ * Only ever touches rows flagged `is_demo`.
+ */
+function maintainDemoData() {
+  if (!config.seedDemoData) return { refreshed: false };
+  const latest = db
+    .prepare('SELECT MAX(created_at) AS latest FROM electricity_reports WHERE is_demo = 1')
+    .get();
+  const newestMs = latest?.latest ? new Date(latest.latest).getTime() : 0;
+  const driftMinutes = newestMs ? (Date.now() - newestMs) / 60000 : Infinity;
+  const threshold = Math.min(
+    Math.max(config.demoRefreshMinutes, 1),
+    Math.max(config.freshness.freshMinutes, 1),
+  );
+  if (newestMs && driftMinutes < threshold) return { refreshed: false, driftMinutes };
+  seedDemoReports({ force: true });
+  return { refreshed: true, driftMinutes };
+}
+
 seedNeighbourhoods();
 seedDemoReports();
 
-export { db, seedDemoReports };
+export { db, seedDemoReports, maintainDemoData };

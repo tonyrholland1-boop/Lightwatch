@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { config } from './config.js';
 import { api } from './api.js';
+import { maintainDemoData } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '..');
@@ -90,4 +91,19 @@ app.listen(config.port, '0.0.0.0', () => {
   console.log(
     `[LightWatch] ${isProduction ? 'production' : 'development'} server listening on http://0.0.0.0:${config.port}`,
   );
+  if (config.seedDemoData) {
+    console.log(`[LightWatch] demo data re-ages every ${config.demoRefreshMinutes} min of drift`);
+  }
 });
+
+// Keep the seeded demo dataset representative during long-running sessions.
+// Real reports are never touched.
+if (config.seedDemoData && Number.isFinite(config.demoRefreshMinutes) && config.demoRefreshMinutes > 0) {
+  setInterval(
+    () => {
+      const result = maintainDemoData();
+      if (result.refreshed) console.log('[LightWatch] demo data re-aged');
+    },
+    Math.min(config.demoRefreshMinutes, 5) * 60 * 1000,
+  ).unref();
+}

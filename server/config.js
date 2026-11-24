@@ -24,5 +24,9 @@ export const config = {
   dataDir: process.env.DATA_DIR || path.resolve(process.cwd(), 'data'),
   dbPathOverride: process.env.DATABASE_PATH || null,
   seedDemoData: process.env.SEED_DEMO_DATA !== 'false',
+  // Demo reports are re-aged once they drift past this age, so the seeded
+  // dataset keeps displaying the mix of states it was designed to show.
+  // 0 disables the periodic refresh (data is still re-aged on boot).
+  demoRefreshMinutes: Number(process.env.DEMO_REFRESH_MINUTES ?? 15),
   contactEmail: process.env.CONTACT_EMAIL || 'feedback@lightwatch.ng',
 };

@@ -275,6 +275,22 @@ test('unknown API routes return JSON, not an HTML error page', async () => {
   assert.equal(body.error, 'not_found');
 });
 
+test('every area resolves to a real state, so a resumed preview is not all-UNKNOWN', async () => {
+  // Guards the bug where demo reports aged past the 120-minute window while the
+  // seeder waited three hours, leaving every area stuck on UNKNOWN.
+  const { body } = await get('/api/overview');
+  const withReports = body.neighbourhoods.filter((area) => area.eligibleReportCount > 0);
+  assert.ok(
+    withReports.length > 0,
+    'seeded demo data must keep at least one area inside the freshness window',
+  );
+  const states = new Set(body.neighbourhoods.map((area) => area.status));
+  assert.ok(
+    states.size > 1,
+    `expected a mix of states for the demo dataset, got only ${[...states].join(', ')}`,
+  );
+});
+
 test('response carries no server fingerprint', async () => {
   const res = await fetch(BASE + '/api/health');
   assert.equal(res.headers.get('x-powered-by'), null);
