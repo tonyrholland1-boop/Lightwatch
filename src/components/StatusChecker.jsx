@@ -64,11 +64,11 @@ function StatusPanel({ detail, onReport, onRefresh, refreshing, thresholds }) {
           <FreshnessChip freshness={area.freshness} />
           <button
             type="button"
-            className="chip"
+            className="chip chip--action"
             onClick={onRefresh}
             aria-label="Refresh status"
             title="Refresh status"
-            style={{ paddingInline: 8 }}
+            disabled={refreshing}
           >
             <Icon
               name="refresh"
@@ -232,7 +232,7 @@ export default function StatusChecker({
         </div>
 
         <div className="checker">
-          <div>
+          <div className="checker__col checker__col--status">
             {error ? (
               <div className="checker__panel" role="alert">
                 <div className="case__rim" aria-hidden="true" />
@@ -263,7 +263,9 @@ export default function StatusChecker({
             )}
           </div>
 
-          <ReportFeed detail={detail} thresholds={thresholds} />
+          <div className="checker__col checker__col--feed">
+            <ReportFeed detail={detail} thresholds={thresholds} />
+          </div>
         </div>
       </div>
     </section>

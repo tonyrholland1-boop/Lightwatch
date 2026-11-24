@@ -16,28 +16,18 @@ const STEPS = [
   },
 ];
 
-export default function HowItWorks({ onScrollTo, metrics }) {
+export default function HowItWorks() {
   return (
     <section className="section" id="how" aria-labelledby="how-heading">
       <div className="shell">
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 40,
-            alignItems: 'flex-end',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ maxWidth: 640 }}>
-            <p className="eyebrow" style={{ marginBottom: 18 }}>
-              How it works
-            </p>
+        <div className="section-head">
+          <div className="section-head__main">
+            <p className="eyebrow section-head__eyebrow">How it works</p>
             <h2 className="chapter" id="how-heading">
               Three steps, built for a <em className="serif-italic">quick</em> glance.
             </h2>
           </div>
-          <p className="lead" style={{ maxWidth: '38ch' }}>
+          <p className="lead section-head__lead">
             No sign-up, no app install. LightWatch works on the phone already in your hand.
           </p>
         </div>
@@ -52,45 +42,7 @@ export default function HowItWorks({ onScrollTo, metrics }) {
           ))}
         </ol>
       </div>
-
-      <Metrics metrics={metrics} />
     </section>
-  );
-}
-
-export function Metrics({ metrics }) {
-  const values = [
-    {
-      value: metrics?.reports24h ?? '—',
-      label: 'Community reports in the last 24 hours',
-    },
-    {
-      value: metrics?.activeAreas ?? '—',
-      label: 'Supported neighbourhoods in the pilot',
-    },
-    {
-      value: metrics?.areasWithRecentReports ?? '—',
-      label: 'Areas with a report in the last 2 hours',
-    },
-    {
-      value:
-        metrics?.medianAgeMinutes === null || metrics?.medianAgeMinutes === undefined
-          ? '—'
-          : `${metrics.medianAgeMinutes} min`,
-      label: 'Median age of today\u2019s reports',
-    },
-  ];
-  return (
-    <div className="shell">
-      <dl className="metrics">
-        {values.map((item) => (
-          <div key={item.label}>
-            <dt className="metric__label">{item.label}</dt>
-            <dd className="metric__value">{item.value}</dd>
-          </div>
-        ))}
-      </dl>
-    </div>
   );
 }
 

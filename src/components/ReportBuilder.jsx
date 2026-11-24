@@ -165,6 +165,11 @@ export default function ReportBuilder({
                       {state.status === 'error' ? 'Report not sent. ' : 'Report received. '}
                     </strong>
                     {state.message}
+                    {state.status === 'success' && chosenArea && (
+                      <span className="alert__detail">
+                        {chosenArea.name} is now updated for everyone checking next.
+                      </span>
+                    )}
                   </span>
                 </div>
               )}
@@ -269,8 +274,7 @@ export default function ReportBuilder({
 
               <button
                 type="submit"
-                className="btn btn--light builder__submit"
-                style={{ height: 48 }}
+                className="btn btn--light btn--lg builder__submit"
                 disabled={submitting}
               >
                 {submitting ? (

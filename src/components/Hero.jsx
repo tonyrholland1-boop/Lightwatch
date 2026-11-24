@@ -1,41 +1,38 @@
 import { Icon } from './icons.jsx';
 import NeighbourhoodSearch from './NeighbourhoodSearch.jsx';
+import heroImage from '../assets/hero-neighbourhood.webp';
+import heroLqip from '../assets/hero-neighbourhood-lqip.webp';
 
-function HeroScene() {
+/**
+ * Hero visual: an illustration of someone checking LightWatch on their phone,
+ * with a small live-report card anchored beside it. The illustration is
+ * lazy-loaded and has a blur-up placeholder so it never blocks first paint.
+ */
+function HeroVisual() {
   return (
-    <div className="scene" aria-hidden="true">
-      <div className="scene__beam scene__beam--a" />
-      <div className="scene__beam scene__beam--b" />
-      <div className="scene__glow" />
-      <div className="scene__slab" />
-      <div className="scene__card">
-        <div className="scene__panel">
-          <div className="scene__panel-orb" />
-          <div className="scene__panel-line" style={{ top: '16%', width: '42%' }} />
-          <div className="scene__panel-line" style={{ top: '22%', width: '26%', opacity: 0.5 }} />
-          <div className="scene__panel-line" style={{ top: '58%', width: '58%', opacity: 0.34 }} />
-          <div className="scene__panel-line" style={{ top: '63%', width: '44%', opacity: 0.22 }} />
-          <div className="scene__panel-chip" />
-        </div>
+    <div className="hero-visual">
+      <div className="hero-visual__frame">
+        <img
+          className="hero-visual__img"
+          src={heroImage}
+          alt="A woman smiling as she checks her phone on a residential street at dusk, with lit windows and a street lamp behind her."
+          width="1000"
+          height="1792"
+          loading="lazy"
+          decoding="async"
+          style={{ backgroundImage: `url(${heroLqip})` }}
+        />
+        <div className="hero-visual__scrim" aria-hidden="true" />
       </div>
-      <div className="scene__chit">
-        <span className="scene__chit-dot" />
-        <span>
-          Reported ON
-          <small>4 min ago · Lekki Phase 1</small>
+
+      {/* Sample report card — decorative, mirrors the real status card. */}
+      <div className="hero-visual__card" aria-hidden="true">
+        <span className="hero-visual__card-dot" />
+        <span className="hero-visual__card-body">
+          <span className="hero-visual__card-status">Power on</span>
+          <span className="hero-visual__card-meta">Lekki Phase 1 · 4 min ago</span>
         </span>
       </div>
-      <div
-        className="scene__chit"
-        style={{ right: '30%', bottom: '19%', transform: 'rotate(4deg)', opacity: 0.82 }}
-      >
-        <span className="scene__chit-dot scene__chit-dot--amber" />
-        <span>
-          Reports disagree
-          <small>12 min ago · Yaba</small>
-        </span>
-      </div>
-      <div className="scene__vignette" />
     </div>
   );
 }
@@ -53,10 +50,6 @@ export default function Hero({
 
   return (
     <section className="hero" id="top">
-      <div className="hero__stage">
-        <HeroScene />
-      </div>
-
       <div className="shell hero__inner">
         <div className="hero__copy">
           <p className="badge reveal">
@@ -80,11 +73,11 @@ export default function Hero({
           </div>
 
           <div className="hero__actions reveal reveal--4">
-            <button type="button" className="btn btn--light" onClick={() => onScrollTo('status')}>
+            <button type="button" className="btn btn--light btn--lg" onClick={() => onScrollTo('status')}>
               Check electricity status
               <Icon name="arrowDown" size={15} />
             </button>
-            <button type="button" className="btn btn--ghost" onClick={onReport}>
+            <button type="button" className="btn btn--ghost btn--lg" onClick={onReport}>
               Report electricity
             </button>
           </div>
@@ -97,6 +90,8 @@ export default function Hero({
             <span>No account needed</span>
           </div>
         </div>
+
+        <HeroVisual />
       </div>
 
       <div className="shell">
