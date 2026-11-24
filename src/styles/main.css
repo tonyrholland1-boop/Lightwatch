@@ -211,6 +211,17 @@
     --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
     --duration-fast: 0.15s;
     --duration-base: 0.25s;
+    /* Motion: calm, never bouncy. All inside the 150–600ms band. */
+    --duration-quick: 180ms;
+    --duration-settle: 260ms;
+    --duration-rise: 420ms;
+    --duration-reveal: 520ms;
+    --duration-max: 600ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-enter: cubic-bezier(0.22, 0.61, 0.36, 1); /* decelerate, no overshoot */
+    --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --rise-distance: 14px;
+    --reveal-distance: 18px;
   }
 
   html {
@@ -273,7 +284,7 @@
     font-size: var(--text-base);
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-sm);
-    transition: transform 0.15s var(--ease);
+    transition: transform var(--duration-quick) var(--ease-standard);
   }
   .skip-link:focus-visible {
     transform: translateY(0);
@@ -442,7 +453,7 @@
     font-size: var(--text-base);
     line-height: 1;
     color: var(--label);
-    transition: color 0.15s var(--ease);
+    transition: color var(--duration-quick) var(--ease-standard);
     padding-block: var(--space-2);
   }
   .nav__link:hover {
@@ -465,8 +476,8 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      border-color var(--duration-fast) var(--ease),
-      background-color var(--duration-fast) var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-quick) var(--ease-standard);
   }
   .nav__action:hover {
     border-color: var(--text-muted);
@@ -500,10 +511,10 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color var(--duration-fast) var(--ease),
-      border-color var(--duration-fast) var(--ease),
-      color var(--duration-fast) var(--ease),
-      transform var(--duration-fast) var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard),
+      color var(--duration-quick) var(--ease-standard),
+      transform var(--duration-quick) var(--ease-standard);
   }
 
   .btn--sm {
@@ -811,9 +822,9 @@
     background: var(--surface-raised);
     backdrop-filter: blur(20px);
     transition:
-      border-color 0.2s var(--ease),
-      background-color 0.3s var(--ease),
-      box-shadow 0.2s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-settle) var(--ease-standard),
+      box-shadow var(--duration-quick) var(--ease-standard);
   }
   .search__shell:focus-within {
     border-color: var(--text-muted);
@@ -846,7 +857,7 @@
     display: grid;
     place-items: center;
     color: var(--muted);
-    transition: color 0.15s var(--ease);
+    transition: color var(--duration-quick) var(--ease-standard);
   }
   .search__clear:hover {
     color: var(--white);
@@ -894,7 +905,7 @@
     text-align: left;
     padding: var(--space-3) var(--space-3);
     border-radius: var(--radius-sm);
-    transition: background-color 0.12s var(--ease);
+    transition: background-color var(--duration-quick) var(--ease-standard);
   }
   .search__option:hover,
   .search__option[data-active='true'] {
@@ -972,8 +983,8 @@
     min-height: var(--control-touch);
     justify-content: center;
     transition:
-      background-color var(--duration-fast) var(--ease),
-      border-color var(--duration-fast) var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard);
   }
   .chip--action:hover {
     background: var(--fill-hover);
@@ -1043,6 +1054,13 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
+  }
+  /* Switching neighbourhoods fades the new panel in softly rather than
+     snapping. Transform-free so it stays cheap on low-end phones. */
+  @media (prefers-reduced-motion: no-preference) {
+    .checker__col > .checker__panel {
+      animation: lw-fade var(--duration-settle) var(--ease-standard) both;
+    }
   }
   .checker__col--feed > .checker__panel {
     overflow: hidden;
@@ -1308,8 +1326,8 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color var(--duration-fast) var(--ease),
-      border-color var(--duration-fast) var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard);
   }
   .suggest-pill:hover {
     border-color: var(--muted);
@@ -1351,7 +1369,7 @@
     min-height: 52px;
     padding: var(--space-3) var(--space-1);
     border-bottom: 1px solid var(--rule);
-    transition: background-color var(--duration-fast) var(--ease);
+    transition: background-color var(--duration-quick) var(--ease-standard);
   }
   .feed__item:hover {
     background: var(--fill-subtle);
@@ -1421,17 +1439,63 @@
     flex-direction: column;
     gap: var(--space-3);
   }
+  /* Skeleton: base tone plus one pulsing highlight. Only opacity animates,
+     so the placeholder never triggers paint or layout work. */
   .skeleton {
+    position: relative;
     height: 34px;
     border-radius: var(--radius-sm);
-    background: linear-gradient(90deg, var(--panel), var(--surface-hover), var(--panel));
-    background-size: 200% 100%;
-    animation: shimmer 1.6s infinite linear;
+    background: var(--fill-subtle);
+    overflow: hidden;
+    isolation: isolate;
   }
-  @keyframes shimmer {
-    to {
-      background-position: -200% 0;
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--fill-control) 42%,
+      var(--fill-hover) 50%,
+      var(--fill-control) 58%,
+      transparent 100%
+    );
+    opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .skeleton::after {
+      /* Ambient loop, deliberately slower than the 600ms interaction band:
+         a loading placeholder that pulses quickly reads as busy and anxious. */
+      animation: lw-skeleton-breathe 1.9s ease-in-out infinite;
     }
+  }
+  @keyframes lw-skeleton-breathe {
+    0%,
+    100% {
+      opacity: 0.28;
+    }
+    50% {
+      opacity: 0.75;
+    }
+  }
+  .skeleton--text {
+    height: 12px;
+    border-radius: var(--radius-xs);
+  }
+  .skeleton--card {
+    height: 172px;
+    border-radius: var(--radius-lg);
+  }
+  .skeleton--row {
+    height: 52px;
+    border-radius: var(--radius-xs);
+  }
+  /* Skeletons are decorative; the live region carries the announcement. */
+  .skeleton-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   /* ---------- Map ---------- */
@@ -1575,7 +1639,7 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     text-align: left;
-    transition: background-color var(--duration-fast) var(--ease);
+    transition: background-color var(--duration-quick) var(--ease-standard);
   }
   .readings__row:hover {
     background: var(--fill-control);
@@ -1680,9 +1744,9 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color var(--duration-fast) var(--ease),
-      border-color var(--duration-fast) var(--ease),
-      color var(--duration-fast) var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard),
+      color var(--duration-quick) var(--ease-standard);
   }
   .filter-pill:active {
     background: var(--fill-press);
@@ -1718,9 +1782,9 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
     transition:
-      border-color 0.18s var(--ease),
-      background-color 0.18s var(--ease),
-      transform 0.18s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-quick) var(--ease-standard),
+      transform var(--duration-quick) var(--ease-standard);
   }
   .area-card::before {
     content: '';
@@ -1728,7 +1792,7 @@
     inset: 0;
     background: radial-gradient(70% 60% at 82% 8%, rgba(255, 255, 255, 0.07), transparent 62%);
     opacity: 0;
-    transition: opacity 0.2s var(--ease);
+    transition: opacity var(--duration-settle) var(--ease-standard);
     pointer-events: none;
   }
   .area-card:hover::before {
@@ -1874,8 +1938,8 @@
     letter-spacing: -0.01em;
     cursor: pointer;
     transition:
-      border-color 0.15s var(--ease),
-      background-color 0.2s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-quick) var(--ease-standard);
   }
   .select-shell select:hover {
     border-color: var(--text-muted);
@@ -1913,8 +1977,8 @@
     background: rgba(255, 255, 255, 0.018);
     text-align: left;
     transition:
-      border-color 0.16s var(--ease),
-      background-color 0.16s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-quick) var(--ease-standard);
   }
   .status-option:hover {
     border-color: var(--control-edge);
@@ -1973,7 +2037,7 @@
     border: 1px solid var(--edge);
     background: rgba(255, 255, 255, 0.015);
     cursor: pointer;
-    transition: border-color 0.15s var(--ease);
+    transition: border-color var(--duration-quick) var(--ease-standard);
     margin-bottom: var(--space-6);
   }
   .checkline:hover {
@@ -1991,8 +2055,8 @@
     place-content: center;
     cursor: pointer;
     transition:
-      background-color 0.15s var(--ease),
-      border-color 0.15s var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard);
   }
   .checkline input:checked {
     background: var(--white);
@@ -2067,7 +2131,7 @@
     border-radius: 50%;
     border: 1.5px solid rgba(0, 0, 0, 0.25);
     border-top-color: var(--black);
-    animation: spin 0.7s linear infinite;
+    animation: spin var(--duration-max) linear infinite;
   }
   @keyframes spin {
     to {
@@ -2316,7 +2380,7 @@
     text-decoration-thickness: 1px;
     text-decoration-color: rgba(204, 145, 102, 0.4);
     display: inline-block;
-    transition: text-decoration-color 0.15s var(--ease);
+    transition: text-decoration-color var(--duration-quick) var(--ease-standard);
   }
   .faq__contact:hover {
     text-decoration-color: var(--copper);
@@ -2340,7 +2404,7 @@
     font-weight: 500;
     line-height: 1.375;
     letter-spacing: -0.04em;
-    transition: color 0.15s var(--ease);
+    transition: color var(--duration-quick) var(--ease-standard);
   }
   .faq__question:hover {
     color: var(--label);
@@ -2349,7 +2413,7 @@
     flex: none;
     margin-top: var(--space-1);
     color: var(--muted);
-    transition: transform 0.24s var(--ease);
+    transition: transform var(--duration-settle) var(--ease-standard);
   }
   .faq__question[aria-expanded='true'] .faq__chevron {
     transform: rotate(180deg);
@@ -2357,7 +2421,10 @@
   .faq__answer-wrap {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s var(--ease);
+    /* 0fr -> 1fr is the only way to animate to auto height. It does touch
+       layout, but it runs once on click (never on load or scroll), and the
+       reduced-motion block below removes it entirely. */
+    transition: grid-template-rows var(--duration-settle) var(--ease-standard);
   }
   .faq__answer-wrap[data-open='true'] {
     grid-template-rows: 1fr;
@@ -2440,7 +2507,7 @@
     color: var(--muted);
     letter-spacing: 0;
     border-radius: var(--radius-xs);
-    transition: color 0.15s var(--ease);
+    transition: color var(--duration-quick) var(--ease-standard);
     text-align: left;
   }
   .footer__link:hover {
@@ -2494,7 +2561,7 @@
   white-space: nowrap;
   color: var(--text-primary);
   opacity: 0.09;
-  transition: opacity 300ms var(--ease), color 300ms var(--ease);
+  transition: opacity var(--duration-settle) var(--ease-standard), color var(--duration-settle) var(--ease-standard);
   pointer-events: auto;
 }
 .footer__wordmark:hover,
@@ -2537,7 +2604,7 @@
     display: grid;
     place-items: center;
     padding: var(--space-5);
-    animation: fade-in 0.2s var(--ease);
+    animation: fade-in var(--duration-quick) var(--ease-standard);
   }
   @keyframes fade-in {
     from {
@@ -2627,7 +2694,7 @@
     font-size: var(--text-small);
     line-height: 1.5;
     color: var(--label);
-    animation: toast-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: toast-in var(--duration-settle) var(--ease-enter);
   }
   @keyframes toast-in {
     from {
@@ -2647,26 +2714,119 @@
 }
 
 @layer utilities {
-  .reveal {
-    animation: reveal-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  }
-  .reveal--2 {
-    animation-delay: 80ms;
-  }
-  .reveal--3 {
-    animation-delay: 160ms;
-  }
-  .reveal--4 {
-    animation-delay: 240ms;
-  }
-  @keyframes reveal-up {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
+  /* =====================================================================
+     MOTION SYSTEM
+     Only transform + opacity are animated (compositor-only, no layout).
+     Everything is gated behind prefers-reduced-motion: no-preference.
+     ===================================================================== */
+  @media (prefers-reduced-motion: no-preference) {
+    /* ---------- Page load: staggered fade-and-rise ---------- */
+    @keyframes lw-rise {
+      from {
+        opacity: 0;
+        transform: translate3d(0, var(--rise-distance), 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
     }
-    to {
+    @keyframes lw-fade {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .rise {
+      animation: lw-rise var(--duration-rise) var(--ease-enter) both;
+    }
+    /* Stagger steps — 60ms apart keeps the whole cascade under 600ms. */
+    .rise--1 { animation-delay: 60ms; }
+    .rise--2 { animation-delay: 120ms; }
+    .rise--3 { animation-delay: 180ms; }
+    .rise--4 { animation-delay: 240ms; }
+    .rise--5 { animation-delay: 300ms; }
+    .rise--6 { animation-delay: 360ms; }
+
+    /* Report cards / list rows: fade only, cheaper than a transform on a grid. */
+    .fade-in {
+      animation: lw-fade var(--duration-settle) var(--ease-standard) both;
+    }
+
+    /* ---------- Scroll reveal ---------- */
+    /* Only hide once JS has confirmed it is running (html.js-motion). Without
+       that class — JS disabled, blocked, or failed — content is fully visible
+       and these sections are still readable. */
+    .js-motion .reveal-on-scroll {
+      opacity: 0;
+      transform: translate3d(0, var(--reveal-distance), 0);
+      transition:
+        opacity var(--duration-reveal) var(--ease-enter),
+        transform var(--duration-reveal) var(--ease-enter);
+      /* Hint the compositor without holding a layer forever. */
+      will-change: opacity, transform;
+    }
+    .js-motion .reveal-on-scroll.is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+      will-change: auto;
+    }
+
+    /* ---------- Status: soft pulse for power ON, dimmed for OFF ---------- */
+    @keyframes lw-pulse-on {
+      0%,
+      100% {
+        opacity: 0.45;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.85;
+        transform: scale(1.3);
+      }
+    }
+    /* A halo that breathes gently behind an ON indicator. */
+    .pulse-on {
+      position: relative;
+      isolation: isolate;
+    }
+    .pulse-on::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      z-index: -1;
+      border-radius: inherit;
+      background: currentColor;
+      opacity: 0.45;
+      /* Ambient "power on" breathing. Slow on purpose: a calm signal, not an
+         alert. Interaction durations stay within 150-600ms. */
+      animation: lw-pulse-on 3.4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    /* OFF reads as inert: no movement, reduced presence. */
+    .is-off {
+      opacity: 0.78;
+    }
+  }
+
+  /* Reduced motion: show the end state immediately, keep no animation. */
+  @media (prefers-reduced-motion: reduce) {
+    .rise,
+    .fade-in,
+    .reveal-on-scroll {
       opacity: 1;
       transform: none;
+      animation: none;
+      transition: none;
+    }
+    .pulse-on::after {
+      animation: none;
+      opacity: 0.3;
+    }
+    .is-off {
+      opacity: 0.85;
     }
   }
 }
@@ -2813,9 +2973,6 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
-  .reveal {
-    animation: none;
-  }
   .faq__answer-wrap {
     transition: none;
   }
@@ -2864,7 +3021,7 @@
   color: var(--label);
   font-size: var(--text-tiny);
   white-space: nowrap;
-  transition: color 0.15s var(--ease);
+  transition: color var(--duration-quick) var(--ease-standard);
 }
 .announcement__link:hover {
   color: var(--white);
@@ -2959,7 +3116,7 @@
   text-decoration-color: rgba(204, 145, 102, 0.45);
   font-size: inherit;
   padding: 0;
-  transition: text-decoration-color 0.15s var(--ease);
+  transition: text-decoration-color var(--duration-quick) var(--ease-standard);
 }
 .link-inline:hover {
   text-decoration-color: var(--copper);
@@ -3023,11 +3180,8 @@
   border-radius: 50%;
   background: var(--status-on);
   box-shadow: 0 0 8px rgba(166, 255, 112, 0.7);
-  animation: tick-pulse 3.2s ease-in-out infinite;
-}
-@keyframes tick-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
+  /* Ambient board indicator; matches the .pulse-on cadence. */
+  animation: lw-pulse-on 3.4s ease-in-out 0.6s infinite;
 }
 @media (max-width: 1023px) {
   .announcement__board {

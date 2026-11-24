@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon } from './icons.jsx';
 import streetNight from '../assets/street-night.webp';
+import { useRevealOnScroll } from '../lib/useMotion.js';
 
 export function WarmConversion({ onReport, onScrollTo }) {
   return (
@@ -73,6 +74,7 @@ const FAQS = [
 
 export function Faq({ contactEmail }) {
   const [openIndex, setOpenIndex] = useState(0);
+  const revealRef = useRevealOnScroll();
 
   return (
     <section className="section" id="faq" aria-labelledby="faq-heading">

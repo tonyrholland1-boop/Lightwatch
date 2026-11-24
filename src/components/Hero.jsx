@@ -10,7 +10,7 @@ import heroLqip from '../assets/hero-neighbourhood-lqip.webp';
  */
 function HeroVisual() {
   return (
-    <div className="hero-visual">
+    <div className="hero-visual rise rise--3">
       <div className="hero-visual__frame">
         <img
           className="hero-visual__img"
@@ -52,27 +52,27 @@ export default function Hero({
     <section className="hero" id="top">
       <div className="shell hero__inner">
         <div className="hero__copy">
-          <p className="badge reveal">
+          <p className="badge rise rise--1">
             <span className="badge__dot" aria-hidden="true" />
             Lagos &amp; Abuja pilot · {supportCount} neighbourhoods
           </p>
 
-          <h1 className="display hero__title reveal reveal--2">
+          <h1 className="display hero__title rise rise--2">
             Know where there&rsquo;s <em className="serif-italic">light</em>.
             <br />
             Before you go looking.
           </h1>
 
-          <p className="hero__support reveal reveal--3">
+          <p className="hero__support rise rise--3">
             See recent electricity updates around your neighbourhood, shared by people
             nearby.
           </p>
 
-          <div className="search--hero reveal reveal--3" style={{ width: '100%' }}>
+          <div className="search--hero rise rise--4" style={{ width: '100%' }}>
             <NeighbourhoodSearch areas={areas} onSelect={onSelect} variant="hero" />
           </div>
 
-          <div className="hero__actions reveal reveal--4">
+          <div className="hero__actions rise rise--5">
             <button type="button" className="btn btn--light btn--lg" onClick={() => onScrollTo('status')}>
               Check electricity status
               <Icon name="arrowDown" size={15} />
@@ -82,7 +82,7 @@ export default function Hero({
             </button>
           </div>
 
-          <div className="hero__proof reveal reveal--4">
+          <div className="hero__proof rise rise--6">
             <span>Community-reported</span>
             <span className="hero__proof-sep" aria-hidden="true" />
             <span>Timestamps on every update</span>

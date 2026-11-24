@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Icon, StatusIcon } from './icons.jsx';
 import { statusMeta, timeAgo } from '../lib/format.js';
+import { useRevealOnScroll } from '../lib/useMotion.js';
 
 const STATUS_ORDER = ['ON', 'OFF', 'CONFLICTED', 'UNKNOWN'];
 
@@ -116,15 +117,16 @@ function CoverageReadings({ areas, onSelect, selectedSlug }) {
   );
 }
 
-function AreaCard({ area, selected, onSelect }) {
+function AreaCard({ area, selected, onSelect, style }) {
   const meta = statusMeta(area.status);
   return (
     <button
       type="button"
-      className="area-card"
+      className="area-card fade-in"
       data-selected={selected}
       onClick={() => onSelect(area)}
       aria-current={selected ? 'true' : undefined}
+      style={style}
     >
       <span className="area-card__top">
         <span>
@@ -167,6 +169,7 @@ export default function Coverage({
   loading,
 }) {
   const [filter, setFilter] = useState('all');
+  const revealRef = useRevealOnScroll();
 
   const visible = areas.filter((area) => {
     if (filter === 'reporting') return area.eligibleReportCount > 0;
@@ -178,7 +181,7 @@ export default function Coverage({
 
   return (
     <section className="section" id="coverage" aria-labelledby="coverage-heading">
-      <div className="shell">
+      <div className="shell reveal-on-scroll" ref={revealRef}>
         <div className="explorer__toolbar">
           <div className="explorer__intro">
             <p className="eyebrow" style={{ marginBottom: 18 }}>
@@ -208,10 +211,12 @@ export default function Coverage({
                 <p className="readings-panel__meta">Live counts</p>
               </div>
               {loading && areas.length === 0 ? (
-                <div className="feed__loading" aria-busy="true">
-                  {[0, 1, 2].map((i) => (
-                    <div className="skeleton" key={i} style={{ height: 56 }} />
-                  ))}
+                <div className="skeleton-stack" aria-busy="true">
+                  <span className="sr-only">Loading coverage readings</span>
+                  <div className="skeleton skeleton--text" style={{ width: '62%' }} />
+                  <div className="skeleton skeleton--row" />
+                  <div className="skeleton skeleton--row" />
+                  <div className="skeleton skeleton--row" />
                 </div>
               ) : (
                 <CoverageReadings
@@ -240,9 +245,10 @@ export default function Coverage({
 
             <div style={{ marginTop: 20 }}>
               {loading && areas.length === 0 ? (
-                <div className="feed__loading" aria-busy="true">
-                  {[0, 1, 2, 3].map((index) => (
-                    <div className="skeleton" key={index} style={{ height: 92 }} />
+                <div className="areas" aria-busy="true">
+                  <span className="sr-only">Loading neighbourhood coverage</span>
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <div className="skeleton skeleton--card" key={index} aria-hidden="true" />
                   ))}
                 </div>
               ) : visible.length === 0 ? (
@@ -252,12 +258,13 @@ export default function Coverage({
                 </div>
               ) : (
                 <div className="areas">
-                  {visible.map((area) => (
+                  {visible.map((area, index) => (
                     <AreaCard
                       key={area.id}
                       area={area}
                       selected={area.slug === selectedSlug}
                       onSelect={onSelect}
+                      style={{ animationDelay: `${Math.min(index, 5) * 55}ms` }}
                     />
                   ))}
                 </div>
