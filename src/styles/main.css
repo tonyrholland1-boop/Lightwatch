@@ -822,9 +822,9 @@
     background: var(--surface-raised);
     backdrop-filter: blur(20px);
     transition:
-      border-color 0.2s var(--ease),
-      background-color 0.3s var(--ease),
-      box-shadow 0.2s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-settle) var(--ease-standard),
+      box-shadow var(--duration-quick) var(--ease-standard);
   }
   .search__shell:focus-within {
     border-color: var(--text-muted);
@@ -905,7 +905,7 @@
     text-align: left;
     padding: var(--space-3) var(--space-3);
     border-radius: var(--radius-sm);
-    transition: background-color 0.12s var(--ease);
+    transition: background-color var(--duration-quick) var(--ease-standard);
   }
   .search__option:hover,
   .search__option[data-active='true'] {
@@ -1938,8 +1938,8 @@
     letter-spacing: -0.01em;
     cursor: pointer;
     transition:
-      border-color 0.15s var(--ease),
-      background-color 0.2s var(--ease);
+      border-color var(--duration-quick) var(--ease-standard),
+      background-color var(--duration-quick) var(--ease-standard);
   }
   .select-shell select:hover {
     border-color: var(--text-muted);
@@ -2037,7 +2037,7 @@
     border: 1px solid var(--edge);
     background: rgba(255, 255, 255, 0.015);
     cursor: pointer;
-    transition: border-color 0.15s var(--ease);
+    transition: border-color var(--duration-quick) var(--ease-standard);
     margin-bottom: var(--space-6);
   }
   .checkline:hover {
@@ -2055,8 +2055,8 @@
     place-content: center;
     cursor: pointer;
     transition:
-      background-color 0.15s var(--ease),
-      border-color 0.15s var(--ease);
+      background-color var(--duration-quick) var(--ease-standard),
+      border-color var(--duration-quick) var(--ease-standard);
   }
   .checkline input:checked {
     background: var(--white);
@@ -2413,7 +2413,7 @@
     flex: none;
     margin-top: var(--space-1);
     color: var(--muted);
-    transition: transform 0.24s var(--ease);
+    transition: transform var(--duration-settle) var(--ease-standard);
   }
   .faq__question[aria-expanded='true'] .faq__chevron {
     transform: rotate(180deg);
@@ -2421,7 +2421,10 @@
   .faq__answer-wrap {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s var(--ease);
+    /* 0fr -> 1fr is the only way to animate to auto height. It does touch
+       layout, but it runs once on click (never on load or scroll), and the
+       reduced-motion block below removes it entirely. */
+    transition: grid-template-rows var(--duration-settle) var(--ease-standard);
   }
   .faq__answer-wrap[data-open='true'] {
     grid-template-rows: 1fr;
@@ -2601,7 +2604,7 @@
     display: grid;
     place-items: center;
     padding: var(--space-5);
-    animation: fade-in 0.2s var(--ease);
+    animation: fade-in var(--duration-quick) var(--ease-standard);
   }
   @keyframes fade-in {
     from {
@@ -2691,7 +2694,7 @@
     font-size: var(--text-small);
     line-height: 1.5;
     color: var(--label);
-    animation: toast-in 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    animation: toast-in var(--duration-settle) var(--ease-enter);
   }
   @keyframes toast-in {
     from {
@@ -2969,9 +2972,6 @@
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
-  }
-  .reveal {
-    animation: none;
   }
   .faq__answer-wrap {
     transition: none;
