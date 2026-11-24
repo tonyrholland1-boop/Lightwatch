@@ -80,11 +80,11 @@ export default function Hero({
           </div>
 
           <div className="hero__actions reveal reveal--4">
-            <button type="button" className="btn btn--light" onClick={() => onScrollTo('status')}>
+            <button type="button" className="btn btn--light btn--lg" onClick={() => onScrollTo('status')}>
               Check electricity status
               <Icon name="arrowDown" size={15} />
             </button>
-            <button type="button" className="btn btn--ghost" onClick={onReport}>
+            <button type="button" className="btn btn--ghost btn--lg" onClick={onReport}>
               Report electricity
             </button>
           </div>

@@ -64,11 +64,11 @@ function StatusPanel({ detail, onReport, onRefresh, refreshing, thresholds }) {
           <FreshnessChip freshness={area.freshness} />
           <button
             type="button"
-            className="chip"
+            className="chip chip--action"
             onClick={onRefresh}
             aria-label="Refresh status"
             title="Refresh status"
-            style={{ paddingInline: 8 }}
+            disabled={refreshing}
           >
             <Icon
               name="refresh"

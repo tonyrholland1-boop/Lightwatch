@@ -15,11 +15,11 @@ export function WarmConversion({ onReport, onScrollTo }) {
           next person on your street.
         </p>
         <div className="warm__actions">
-          <button type="button" className="btn btn--light" onClick={() => onScrollTo('status')}>
+          <button type="button" className="btn btn--light btn--lg" onClick={() => onScrollTo('status')}>
             Check a neighbourhood
             <Icon name="arrowRight" size={15} />
           </button>
-          <button type="button" className="btn btn--ghost" onClick={onReport}>
+          <button type="button" className="btn btn--ghost btn--lg" onClick={onReport}>
             Report electricity
           </button>
         </div>
