@@ -7,6 +7,7 @@ import {
   statusMeta,
   timeAgo,
 } from '../lib/format.js';
+import { useRevealOnScroll } from '../lib/useMotion.js';
 
 function FreshnessChip({ freshness }) {
   const meta = freshnessMeta(freshness);
@@ -80,7 +81,12 @@ function StatusPanel({ detail, onReport, onRefresh, refreshing, thresholds }) {
       </div>
 
       <div className={`status-hero status-hero--${meta.tone}`}>
-        <span className="status-hero__icon" aria-hidden="true">
+        <span
+          className={`status-hero__icon${area.status === 'ON' ? ' pulse-on' : ''}${
+            area.status === 'OFF' ? ' is-off' : ''
+          }`}
+          aria-hidden="true"
+        >
           <StatusIcon status={area.status} size={20} />
         </span>
         <div className="status-hero__body">
@@ -215,9 +221,10 @@ export default function StatusChecker({
   thresholds,
   error,
 }) {
+  const revealRef = useRevealOnScroll();
   return (
     <section className="section section--entry" id="status" aria-labelledby="status-heading">
-      <div className="shell">
+      <div className="shell reveal-on-scroll" ref={revealRef}>
         <div style={{ marginBottom: 40, maxWidth: 720 }}>
           <p className="eyebrow" style={{ marginBottom: 18 }}>
             Live check
@@ -252,6 +259,7 @@ export default function StatusChecker({
               </div>
             ) : detail ? (
               <StatusPanel
+                key={detail.slug}
                 detail={detail}
                 onReport={onReport}
                 onRefresh={onRefresh}
@@ -296,10 +304,14 @@ function ReportFeed({ detail, thresholds }) {
         </p>
       ) : (
         <ul className="feed">
-          {reports.slice(0, 20).map((report) => {
+          {reports.slice(0, 20).map((report, index) => {
             const meta = statusMeta(report.status);
             return (
-              <li className="feed__item" key={report.id}>
+              <li
+                className="feed__item fade-in"
+                key={report.id}
+                style={{ animationDelay: `${Math.min(index, 5) * 55}ms` }}
+              >
                 <span
                   className={`status-token status-token--${meta.tone}`}
                   style={{ minWidth: 34, paddingTop: 2 }}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon } from './icons.jsx';
+import { useRevealOnScroll } from '../lib/useMotion.js';
 
 const STEPS = [
   {
@@ -17,9 +18,10 @@ const STEPS = [
 ];
 
 export default function HowItWorks() {
+  const revealRef = useRevealOnScroll();
   return (
     <section className="section" id="how" aria-labelledby="how-heading">
-      <div className="shell">
+      <div className="shell reveal-on-scroll" ref={revealRef}>
         <div className="section-head">
           <div className="section-head__main">
             <p className="eyebrow section-head__eyebrow">How it works</p>
@@ -101,9 +103,10 @@ const LEGEND = [
 ];
 
 export function Trust({ onScrollTo }) {
+  const revealRef = useRevealOnScroll();
   return (
     <section className="section" id="trust" aria-labelledby="trust-heading">
-      <div className="shell">
+      <div className="shell reveal-on-scroll" ref={revealRef}>
         <div style={{ maxWidth: 760, marginBottom: 48 }}>
           <p className="eyebrow" style={{ marginBottom: 18 }}>
             Transparency

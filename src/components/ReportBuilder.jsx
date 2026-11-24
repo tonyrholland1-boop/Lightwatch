@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from './icons.jsx';
 import { statusMeta, timeAgo } from '../lib/format.js';
+import { useRevealOnScroll } from '../lib/useMotion.js';
 
 const emptyForm = { neighbourhoodId: '', status: '', acknowledged: false };
 
@@ -16,6 +17,7 @@ export default function ReportBuilder({
   const [state, setState] = useState({ status: 'idle', message: '', tone: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const resultRef = useRef(null);
+  const revealRef = useRevealOnScroll();
   const submitting = state.status === 'submitting';
 
   useEffect(() => {
@@ -83,7 +85,7 @@ export default function ReportBuilder({
 
   return (
     <section className="section" id="report" aria-labelledby="report-heading">
-      <div className="shell">
+      <div className="shell reveal-on-scroll" ref={revealRef}>
         <div style={{ maxWidth: 700, marginBottom: 40 }}>
           <p className="eyebrow" style={{ marginBottom: 18 }}>
             Contribute
